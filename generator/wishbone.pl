@@ -1928,7 +1928,7 @@ sub gen_muxcbs{
           printf OUTFILE "%s_%s_i <= %s_%s_o",$slave[$i]{"wbs"},$rename_tga,$master[$tmp]{"wbm"},$rename_tga;
         } else {
           $tmp=1; until ($master[$tmp]{("priority_".($slave[$i]{"wbs"}))} ne 0) {$tmp++;};
-          printf OUTFILE "%s_%s_i <= (%s_%s_o and %s_%s_bg",$slave[$i]{"wbs"},$rename_tga,$master[$tmp]{"wbm"},$rename_tga,$master[$tmp]{"wbm"},$slave[$i]{"wbs"};
+          printf OUTFILE "%s_%s_i <= (%s_%s_o and %s_%s_bg)",$slave[$i]{"wbs"},$rename_tga,$master[$tmp]{"wbm"},$rename_tga,$master[$tmp]{"wbm"},$slave[$i]{"wbs"};
           for ($j=$tmp+1; $j le $masters; $j++) {
             if ($master[$j]{("priority_".($slave[$i]{"wbs"}))} ne 0) {
 	      if ($master[$j]{"tga_o"} eq 1) {
