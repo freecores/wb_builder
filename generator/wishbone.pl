@@ -1783,7 +1783,7 @@ sub gen_muxcbs{
         if ($rty_o eq 0) {
           printf OUTFILE "%s_rty_i <= '0';\n",$master[$i]{"wbm"};
         } else {
-          $tmp=1; until ($master[$i]{("priority_".($slave[$j]{"wbs"}))} ne 0) {$tmp++};
+          $tmp=1; until ($master[$i]{("priority_".($slave[$tmp]{"wbs"}))} ne 0) {$tmp++};
           printf OUTFILE "%s_rty_i <= (%s_rty_o and %s_%s_bg)",$master[$i]{"wbm"},$slave[$tmp]{"wbs"},$master[$i]{"wbm"},$slave[$tmp]{"wbs"};
           for ($j=$tmp+1; $j le $slaves; $j++) {
             if ($master[$i]{("priority_".($slave[$j]{"wbs"}))} ne 0) {
@@ -1798,7 +1798,7 @@ sub gen_muxcbs{
     printf OUTFILE "-- err_i(s)\n";
     for ($i=1; $i le $masters; $i++) {
       if ($master[$i]{"err_i"} eq 1) {
-        $rty_o=0;
+        $err_o=0;
         for ($j=1; $j le $masters; $j++) {
           if (($slave[$j]{"err_o"} eq 1) && ($master[$i]{("priority_".($slave[$j]{"wbs"}))} ne 0)) {
             $err_o+=1;
@@ -1807,7 +1807,7 @@ sub gen_muxcbs{
         if ($err_o eq 0) {
           printf OUTFILE "%s_err_i <= '0';\n",$master[$i]{"wbm"};
         } else {
-          $tmp=1; until ($master[$i]{("priority_".($slave[$j]{"wbs"}))} ne 0) {$tmp++};
+          $tmp=1; until ($master[$i]{("priority_".($slave[$tmp]{"wbs"}))} ne 0) {$tmp++};
           printf OUTFILE "%s_err_i <= (%s_err_o and %s_%s_bg)",$master[$i]{"wbm"},$slave[$tmp]{"wbs"},$master[$i]{"wbm"},$slave[$tmp]{"wbs"};
           for ($j=$tmp+1; $j le $slaves; $j++) {
             if ($master[$i]{("priority_".($slave[$j]{"wbs"}))} ne 0) {
