@@ -180,6 +180,9 @@ while($a = <FILE>)
       # priority for crossbarswitch
       if ($a =~ /^( *)(priority)(_)([0-9a-zA-Z_]*)( *)(=)( *)([0-9]*)(;?)($*)/) {
         $master[$masters]{("priority_"."$4")}=$8; };
+      # priority for shared bus
+      if ($a =~ /^( *)(priority)( *)(=)( *)([0-9]*)(;?)($*)/) {
+	  $priority += $6; };
       $a = <FILE>;
     };
   };
@@ -1229,13 +1232,20 @@ sub gen_arbiter {
       printf OUTFILE " and %s_bg_q='0'",$master[$i]{"wbm"}; };
     printf OUTFILE " else '0';\n";
     printf OUTFILE "%s_bg_1 <= '1' when idle='1' and %s_cyc_o='1' and %s_trafic_ctrl_limit='0' else '0';\n",$master[1]{"wbm"},$master[1]{"wbm"},$master[1]{"wbm"};
+    $depend = $master[1]{"wbm"}."_bg_1='0'";
     for ($i=2; $i le $masters; $i++) {
-      printf OUTFILE "%s_bg_1 <= '1' when idle='1' and %s_cyc_o='1' and %s_trafic_ctrl_limit='0' and %s_bg_1='0' else '0';\n",$master[$i]{"wbm"},$master[$i]{"wbm"},$master[$i]{"wbm"},$master[$i-1]{"wbm"}; };
-    printf OUTFILE "%s_bg_2 <= '1' when idle='1' and %s_bg_1='0' and %s_cyc_o='1' else '0';\n",$master[1]{"wbm"},$master[$masters]{"wbm"},$master[1]{"wbm"};
+      printf OUTFILE "%s_bg_1 <= '1' when idle='1' and %s_cyc_o='1' and %s_trafic_ctrl_limit='0' and (%s) else '0';\n",$master[$i]{"wbm"},$master[$i]{"wbm"},$master[$i]{"wbm"},$depend;
+      $depend = $depend." and ".$master[$i]{"wbm"}."_bg_1='0'";
+    };
+
+    printf OUTFILE "%s_bg_2 <= '1' when idle='1' and (%s) and %s_cyc_o='1' else '0';\n",$master[1]{"wbm"},$depend,$master[1]{"wbm"};
+    $depend = $depend." and ".$master[1]{"wbm"}."_bg_2='0'";
     for ($i=2; $i le $masters; $i++) {
-      printf OUTFILE "%s_bg_2 <= '1' when idle='1' and %s_bg_2='0' and %s_cyc_o='1' else '0';\n",$master[$i]{"wbm"},$master[$i-1]{"wbm"},$master[$i]{"wbm"}; };
+      printf OUTFILE "%s_bg_2 <= '1' when idle='1' and (%s) and %s_cyc_o='1' else '0';\n",$master[$i]{"wbm"},$depend,$master[$i]{"wbm"}; 
+      $depend = $depend." and ".$master[$i]{"wbm"}."_bg_2='0'";
+    };
     for ($i=1; $i le $masters; $i++) {
-      printf OUTFILE "%s_bg <= %s_bg_q or %s_bg_2 or %s_bg_2;\n",$master[$i]{"wbm"},$master[$i]{"wbm"},$master[$i]{"wbm"},$master[$i]{"wbm"}; };
+      printf OUTFILE "%s_bg <= %s_bg_q or %s_bg_1 or %s_bg_2;\n",$master[$i]{"wbm"},$master[$i]{"wbm"},$master[$i]{"wbm"},$master[$i]{"wbm"}; };
     # ce
     printf OUTFILE "ce <= %s_cyc_o",$master[1]{"wbm"};
     for ($i=2; $i le $masters; $i++) {
@@ -1303,6 +1313,7 @@ sub gen_arbiter {
           };
         }; # end for
         # _bg
+	$depend = "";
         $tmp=1; until ($master[$tmp]{("priority_".($slave[$j]{"wbs"}))} ne 0) {$tmp++};
         printf OUTFILE "\nidle <= '1' when %s_bg_q='0'",$master[$tmp]{"wbm"};
         for ($i=$tmp+1; $i le $masters; $i++) {
@@ -1312,19 +1323,20 @@ sub gen_arbiter {
         };
         printf OUTFILE " else '0';\n";
         printf OUTFILE "%s_bg_1 <= '1' when idle='1' and %s_cyc_o='1' and %s_%s_ss='1' and %s_trafic_limit='0' else '0';\n",$master[$tmp]{"wbm"},$master[$tmp]{"wbm"},$master[$tmp]{"wbm"},$slave[$j]{"wbs"},$master[$tmp]{"wbm"};
-        $tmp1 = $tmp;
+	$depend = $master[$tmp]{"wbm"}."_bg_1='0'",;
         for ($i=$tmp+1; $i le $masters; $i++) {
           if ($master[$i]{("priority_".($slave[$j]{"wbs"}))} ne 0) {
-            printf OUTFILE "%s_bg_1 <= '1' when idle='1' and %s_bg_1='0' and %s_cyc_o='1' and %s_%s_ss='1' and %s_trafic_limit='0' else '0';\n",$master[$i]{"wbm"},$master[$tmp1]{"wbm"},$master[$i]{"wbm"},$master[$i]{"wbm"},$slave[$j]{"wbs"},$master[$i]{"wbm"};
-            $tmp1 = $i;
+	    printf OUTFILE "%s_bg_1 <= '1' when idle='1' and (%s) and %s_cyc_o='1' and %s_%s_ss='1' and %s_trafic_limit='0' else '0';\n",$master[$i]{"wbm"},$depend,$master[$i]{"wbm"},$master[$i]{"wbm"},$slave[$j]{"wbs"},$master[$i]{"wbm"},$slave[$j]{"wbs"},$master[$i]{"wbm"};;
+	    $depend = $depend." and ".$master[$i]{"wbm"}."_bg_1='0'";
           };
         };
-        printf OUTFILE "%s_bg_2 <= '1' when idle='1' and %s_bg_1='0' and %s_cyc_o='1' and %s_%s_ss='1' else '0';\n",$master[$tmp]{"wbm"},$master[$tmp1]{"wbm"},$master[$tmp]{"wbm"},$master[$tmp]{"wbm"},$slave[$j]{"wbs"};
+        printf OUTFILE "%s_bg_2 <= '1' when idle='1' and (%s) and %s_cyc_o='1' and %s_%s_ss='1' else '0';\n",$master[$tmp]{"wbm"},$depend,$master[$tmp]{"wbm"},$master[$tmp]{"wbm"},$slave[$j]{"wbs"};
+        $depend = $depend." and ".$master[$tmp]{"wbm"}."_bg_2='0'";
         $tmp1 = $tmp;
         for ($i=$tmp+1; $i le $masters; $i++) {
           if ($master[$i]{("priority_".($slave[$j]{"wbs"}))} ne 0) {
-            printf OUTFILE "%s_bg_2 <= '1' when idle='1' and %s_bg_2='0' and %s_cyc_o='1' and %s_%s_ss='1' else '0';\n",$master[$i]{"wbm"},$master[$tmp1]{"wbm"},$master[$i]{"wbm"},$master[$i]{"wbm"},$slave[$j]{"wbs"};
-            $tmp1 = $i;
+            printf OUTFILE "%s_bg_2 <= '1' when idle='1' and (%s) and %s_cyc_o='1' and %s_%s_ss='1' else '0';\n",$master[$i]{"wbm"},$depend,$master[$i]{"wbm"},$master[$i]{"wbm"},$slave[$j]{"wbs"};
+          $depend = $depend." and ".$master[$i]{"wbm"}."_bg_2='0'";
           };
         };
         for ($i=1; $i le $masters; $i++) {
