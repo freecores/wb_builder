@@ -108,6 +108,7 @@ sub slave_init {
 };
 
 sub read_defines {
+$priority=0;
 open(FILE,"<$_[0]") or die "could not read from $file";
 while($a = <FILE>)
 {
@@ -175,8 +176,8 @@ while($a = <FILE>)
         if (($2 eq "tga_o") && ($7 eq 1)) {
           $tga_o++; };
 	# priority for shared bus system
-#	if ($2 eq "priority") {
-#          $priority += $7; };
+	if ($2 eq "priority") {
+          $priority += $7; };
       }; #end if
       if ($a =~ /^( *)(type)( *)(=)( *)(ro|wo|rw)(;?)($*)/) {
         $master[$masters]{"$2"}=$6; };
@@ -212,12 +213,12 @@ while($a = <FILE>)
   };
 }; #end while
 close($_[0]);
-$priority = 0;
-if ($interconnect eq "sharedbus") {
-  for ($i=1; $i le $masters; $i++) {
-      $priority += $master[$i]{"priority"}; 
-  };
-};
+#$priority = 0;
+#if ($interconnect eq "sharedbus") {
+#  for ($i=1; $i le $masters; $i++) {
+#      $priority = $priority + $master[$i]{"priority"}; 
+#  };
+#};
 }; #end sub
 
 ################################################################################
@@ -2005,6 +2006,7 @@ if ($tmp eq "-nogui") {
   };
   gui_fsm;
   generate_defines($infile);
+  read_defines($infile);
 };
 
 # main
