@@ -877,8 +877,8 @@ use IEEE.std_logic_1164.all;
 entity trafic_supervision is
 
   generic (
-    priority     : integer;
-    tot_priority : integer);
+    priority     : integer := 1;
+    tot_priority : integer := 2);
 
   port (
     bg           : in  std_logic;       -- bus grant
