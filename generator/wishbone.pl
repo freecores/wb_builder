@@ -1888,9 +1888,11 @@ sub gen_muxcbs{
           for ($j=$tmp+1; $j le $masters; $j++) {
             if ($master[$j]{("priority_".($slave[$i]{"wbs"}))} ne 0) {
 	      if ($master[$j]{"tga_o"} eq 1) {
-                printf OUTFILE " or (%s_%s_o and %s_%s_bg)",$master[$j]{"wbm"},$rename_tga,$master[$j]{"wbm"},$slave[$i]{"wbs"};
+                printf OUTFILE " or (%s_%s_o and %s_%s_bg)",$master[$j]{"wbm"},$rename_tgc,$master[$j]{"wbm"},$slave[$i]{"wbs"};
 	      } else {
-		printf OUTFILE " or \"%s\"",$classic;
+		if ($classic ne "000") {
+		  printf OUTFILE " or \"%s\"",$classic;
+	        };
 	      };
 
             };
