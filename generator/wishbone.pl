@@ -1887,7 +1887,12 @@ sub gen_muxcbs{
           printf OUTFILE "%s_%s_i <= (%s_%s_o and %s_%s_bg)",$slave[$i]{"wbs"},$rename_tgc,$master[$tmp]{"wbm"},$rename_tgc,$master[$tmp]{"wbm"},$slave[$i]{"wbs"};
           for ($j=$tmp+1; $j le $masters; $j++) {
             if ($master[$j]{("priority_".($slave[$i]{"wbs"}))} ne 0) {
-              printf OUTFILE " or (%s_%s_o and %s_%s_bg)",$master[$j]{"wbm"},$rename_tgc,$master[$j]{"wbm"},$slave[$i]{"wbs"};
+	      if ($master[$j]{"tga_o"} eq 1) {
+                printf OUTFILE " or (%s_%s_o and %s_%s_bg)",$master[$j]{"wbm"},$rename_tga,$master[$j]{"wbm"},$slave[$i]{"wbs"};
+	      } else {
+		printf OUTFILE " or \"%s\"",$classic;
+	      };
+
             };
           };
         };
@@ -1912,7 +1917,9 @@ sub gen_muxcbs{
           printf OUTFILE "%s_%s_i <= (%s_%s_o and %s_%s_bg",$slave[$i]{"wbs"},$rename_tga,$master[$tmp]{"wbm"},$rename_tga,$master[$tmp]{"wbm"},$slave[$i]{"wbs"};
           for ($j=$tmp+1; $j le $masters; $j++) {
             if ($master[$j]{("priority_".($slave[$i]{"wbs"}))} ne 0) {
-              printf OUTFILE " or (%s_%s_o and %s_%s_bg",$master[$j]{"wbm"},$rename_tga,$master[$j]{"wbm"},$slave[$i]{"wbs"};
+	      if ($master[$j]{"tga_o"} eq 1) {
+                printf OUTFILE " or (%s_%s_o and %s_%s_bg)",$master[$j]{"wbm"},$rename_tga,$master[$j]{"wbm"},$slave[$i]{"wbs"};
+	      };
             };
           };
         };
