@@ -164,8 +164,8 @@ while($a = <FILE>)
     };
     $a = <FILE>;
     until ($a =~ /^(end master)($*)/) {
-      if ($a =~ /^( *)(dat_size|adr_o_hi|adr_o_lo|lock_o|err_i|rty_i|tga_o|tgc_o|priority)( *)(=)( *)(0x)?([0-9a-fA-F]+)(;?)($*)/) {
-      $master[$masters]{"$2"}=$7;
+      if ($a =~ /^( *)(dat_size|adr_o_hi|adr_o_lo|lock_o|err_i|rty_i|tga_o|tgc_o|priority)( *)(=)( *)(0x)?([0-9a-fA-F])+(;?)($*)/) {
+        $master[$masters]{"$2"}=$7;
         if (($2 eq "rty_i") && ($7 eq 1)) {
           $rty_i++; };
         if (($2 eq "err_i") && ($7 eq 1)) {
@@ -174,15 +174,15 @@ while($a = <FILE>)
           $tgc_o++; };
         if (($2 eq "tga_o") && ($7 eq 1)) {
           $tga_o++; };
+	# priority for shared bus system
+	if ($2 eq "priority") {
+          $priority += $7; };
       }; #end if
       if ($a =~ /^( *)(type)( *)(=)( *)(ro|wo|rw)(;?)($*)/) {
         $master[$masters]{"$2"}=$6; };
       # priority for crossbarswitch
       if ($a =~ /^( *)(priority)(_)([0-9a-zA-Z_]*)( *)(=)( *)([0-9]*)(;?)($*)/) {
         $master[$masters]{("priority_"."$4")}=$8; };
-      # priority for shared bus
-      if ($a =~ /^( *)(priority)( *)(=)( *)([0-9]*)(;?)($*)/) {
-	  $priority += $6; };
       $a = <FILE>;
     };
   };
