@@ -178,7 +178,7 @@ while($a = <FILE>)
       if ($a =~ /^( *)(type)( *)(=)( *)(ro|wo|rw)(;?)($*)/) {
         $master[$masters]{"$2"}=$6; };
       # priority for crossbarswitch
-      if ($a =~ /^( *)(priority)(_)([0-9a-zA-Z]*)( *)(=)( *)([0-9]*)(;?)($*)/) {
+      if ($a =~ /^( *)(priority)(_)([0-9a-zA-Z_]*)( *)(=)( *)([0-9]*)(;?)($*)/) {
         $master[$masters]{("priority_"."$4")}=$8; };
       $a = <FILE>;
     };
@@ -831,7 +831,7 @@ sub gen_vhdl_package {
       # input record
       printf OUTFILE "type %s_wbs_i_type is record\n",$slave[$i]{"wbs"};
       if ($slave[$i]{"type"} ne "ro") {
-        printf OUTFILE "  dat_i : std_logic_vector(%s downto 0);\n",$master[$i]{"dat_size"}-1;
+        printf OUTFILE "  dat_i : std_logic_vector(%s downto 0);\n",$slave[$i]{"dat_size"}-1;
         printf OUTFILE "  we_i  : std_logic;\n"; };
       if ($dat_size eq 8) {
         printf OUTFILE "  sel_i : std_logic;\n";
@@ -845,7 +845,7 @@ sub gen_vhdl_package {
       printf OUTFILE "end record;\n";
       # output record
       printf OUTFILE "type %s_wbs_o_type is record\n",$slave[$i]{"wbs"};
-      if ($slave[$i]{"type"} =~ /(ro|rw)/) { printf OUTFILE "  dat_o : std_logic_vector(%s downto 0);\n",$dat_size-1 };
+      if ($slave[$i]{"type"} =~ /(ro|rw)/) { printf OUTFILE "  dat_o : std_logic_vector(%s downto 0);\n",$slave[$i]{"dat_size"}-1 };
       if ($slave[$i]{"rty_o"} eq 1) { printf OUTFILE "  rty_o : std_logic;\n" };
       if ($slave[$i]{"err_o"} eq 1) { printf OUTFILE "  err_o : std_logic;\n" };
       printf OUTFILE "  ack_o : std_logic;\n";
@@ -917,7 +917,7 @@ begin  -- rtl
       trafic_limit <= '0';
     elsif clk'event and clk = '1' then  -- rising clock edge
       if ce='1' then
-        if bg='1' and shreg(tot_priority-1)='0' then
+        if bg='1' and shreg(tot_priority-1)/='1' then
           cntr <= cntr + 1;
           if cntr=priority-1 then
             trafic_limit <= '1';
@@ -1861,7 +1861,7 @@ sub gen_muxcbs{
           $tmp=1; until ($master[$i]{("priority_".($slave[$tmp]{"wbs"}))} ne 0) {$tmp++};
           printf OUTFILE "%s_dat_i <= (%s_dat_o and %s_%s_bg)",$master[$i]{"wbm"},$slave[$tmp]{"wbs"},$master[$i]{"wbm"},$slave[$tmp]{"wbs"};
           for ($j=$tmp+1; $j le $slaves; $j++) {
-            if (($master[$i]{("priority_".($slave[$i]{"wbs"}))} ne 0) && ($master[$i]{"type"} ne "wo")) {
+            if (($master[$i]{("priority_".($slave[$j]{"wbs"}))} ne 0) && ($master[$i]{"type"} ne "wo")) {
               printf OUTFILE " or (%s_dat_o and %s_%s_bg)",$slave[$j]{"wbs"},$master[$i]{"wbm"},$slave[$j]{"wbs"};
             };
           };
@@ -1884,10 +1884,10 @@ sub gen_muxcbs{
           printf OUTFILE "%s_%s_i <= %s_%s_o",$slave[$i]{"wbs"},$rename_tgc,$master[$tmp]{"wbm"},$rename_tgc;
         } else {
           $tmp=1; until ($master[$tmp]{("priority_".($slave[$i]{"wbs"}))} ne 0) {$tmp++;};
-          printf OUTFILE "%s_%s_i <= (%s_%s_o and %s_%s_bg",$slave[$i]{"wbs"},$rename_tgc,$master[$tmp]{"wbm"},$rename_tgc,$master[$tmp]{"wbm"},$slave[$i]{"wbs"};
+          printf OUTFILE "%s_%s_i <= (%s_%s_o and %s_%s_bg)",$slave[$i]{"wbs"},$rename_tgc,$master[$tmp]{"wbm"},$rename_tgc,$master[$tmp]{"wbm"},$slave[$i]{"wbs"};
           for ($j=$tmp+1; $j le $masters; $j++) {
             if ($master[$j]{("priority_".($slave[$i]{"wbs"}))} ne 0) {
-              printf OUTFILE " or (%s_%s_o and %s_%s_bg",$master[$j]{"wbm"},$rename_tgc,$master[$j]{"wbm"},$slave[$i]{"wbs"};
+              printf OUTFILE " or (%s_%s_o and %s_%s_bg)",$master[$j]{"wbm"},$rename_tgc,$master[$j]{"wbm"},$slave[$i]{"wbs"};
             };
           };
         };
