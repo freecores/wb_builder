@@ -213,12 +213,6 @@ while($a = <FILE>)
   };
 }; #end while
 close($_[0]);
-#$priority = 0;
-#if ($interconnect eq "sharedbus") {
-#  for ($i=1; $i le $masters; $i++) {
-#      $priority = $priority + $master[$i]{"priority"}; 
-#  };
-#};
 }; #end sub
 
 ################################################################################
