@@ -109,6 +109,8 @@ sub slave_init {
 
 sub read_defines {
 $priority=0;
+$masters=0;
+$slaves=0;
 open(FILE,"<$_[0]") or die "could not read from $file";
 while($a = <FILE>)
 {
