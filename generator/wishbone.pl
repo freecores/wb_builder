@@ -38,7 +38,7 @@ my $endofburst="111";
 my $interconnect="sharedbus";
 my $mux_type="andor";
 my $optimize="speed";
-my $priority=0;
+my $priority="0";
 
 # keep track of implementation size
 my $masters=0;
@@ -164,7 +164,7 @@ while($a = <FILE>)
     };
     $a = <FILE>;
     until ($a =~ /^(end master)($*)/) {
-      if ($a =~ /^( *)(dat_size|adr_o_hi|adr_o_lo|lock_o|err_i|rty_i|tga_o|tgc_o|priority)( *)(=)( *)(0x)?([0-9a-fA-F])+(;?)($*)/) {
+      if ($a =~ /^( *)(dat_size|adr_o_hi|adr_o_lo|lock_o|err_i|rty_i|tga_o|tgc_o|priority)( *)(=)( *)(0x)?([0-9a-fA-F]*)(;?)($*)/) {
         $master[$masters]{"$2"}=$7;
         if (($2 eq "rty_i") && ($7 eq 1)) {
           $rty_i++; };
@@ -175,8 +175,8 @@ while($a = <FILE>)
         if (($2 eq "tga_o") && ($7 eq 1)) {
           $tga_o++; };
 	# priority for shared bus system
-	if ($2 eq "priority") {
-          $priority += $7; };
+#	if ($2 eq "priority") {
+#          $priority += $7; };
       }; #end if
       if ($a =~ /^( *)(type)( *)(=)( *)(ro|wo|rw)(;?)($*)/) {
         $master[$masters]{"$2"}=$6; };
@@ -212,6 +212,12 @@ while($a = <FILE>)
   };
 }; #end while
 close($_[0]);
+$priority = 0;
+if ($interconnect eq "sharedbus") {
+  for ($i=1; $i le $masters; $i++) {
+      $priority += $master[$i]{"priority"}; 
+  };
+};
 }; #end sub
 
 ################################################################################
@@ -744,7 +750,7 @@ sub generate_defines {
     printf OUTFILE "  tgd_o=%s\n",$master[$i]{"tgd_o"};
     printf OUTFILE "  err_i=%s\n",$master[$i]{"err_i"};
     printf OUTFILE "  rty_i=%s\n",$master[$i]{"rty_i"};
-    if ($interconnect eq 'sharedbus') {
+    if ($interconnect eq "sharedbus") {
       printf OUTFILE "  priority=%s\n",$master[$i]{"priority"};
     } else {
       for ($j=1; $j le $slaves; $j++) {
