@@ -4,21 +4,23 @@ This is a clone of opencores wb_builder.
  
 From: http://opencores.org/project,wb_builder
 
-# Known errors
+### Known errors
 
 - when data bus size is 8 bits the script generates wishbone sel signals which are of no use
 
-# Features
+### Features
+
+![screenshot](/readme/wb_builder.png?raw=true "Main Menu")
 
 - TK GUI for easy startup
 - supports both shared bus and csorrbarswitch topology
 
-# Status
+### Status
 
 - design tested in HDL simulator and in FPGA (ALTERA C12)
 - current design only support VHDL output
 
-# Description
+### Description
 
 The intention is to provide an easy way to create and change a system based on the WISHBONE bus. The user shall be able to try different configurations to achieve an area/performance optimized design.
 

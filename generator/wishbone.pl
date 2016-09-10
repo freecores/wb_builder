@@ -137,7 +137,7 @@ while($a = <FILE>)
   if ($a =~ /^(interconnect)( *)(=)( *)(crossbarswitch|sharedbus)(;?)$/) {
     $interconnect = $5; };
 
-  if ($a =~ /^(signal_groups)( *)(=)( *)([0-1])(;?)($*)/) {
+  if ($a =~ /^(signal_groups)( *)(=)( *)([0-1])(;?)/m) {
     $signal_groups = $5; };
 
   if ($a =~ /^(mux_type)( *)(=)( *)(mux|andor|tristate)(;?)$/) {
@@ -146,7 +146,7 @@ while($a = <FILE>)
   if ($a =~ /^(optimize)( *)(=)( *)(speed|area);?$/) {
     $optimize = $5; };
 
-  if ($a =~ /^(dat_size|adr_size|tgd_bits|tga_bits|tgc_bits)( *)(=)( *)([0-9]+)(;?)($*)/) {
+  if ($a =~ /^(dat_size|adr_size|tgd_bits|tga_bits|tgc_bits)( *)(=)( *)([0-9]+)(;?)/m) {
     if ($1 eq "dat_size"){$dat_size = $5};
     if ($1 eq "adr_size"){$adr_size = $5};
     if ($1 eq "tgd_bits"){$tgd_bits = $5};
@@ -154,20 +154,20 @@ while($a = <FILE>)
     if ($1 eq "tgc_bits"){$tgc_bits = $5};
   };
 
-  if ($a =~ /^(rename)(_)(tga|tgc|tgd)( *)(=)( *)([a-zA-Z_-]+)(;?)($*)/) {
+  if ($a =~ /^(rename)(_)(tga|tgc|tgd)( *)(=)( *)([a-zA-Z_-]+)(;?)/m) {
     if ($3 eq "tga"){$rename_tga=$7};
     if ($3 eq "tgc"){$rename_tgc=$7};
     if ($3 eq "tgd"){$rename_tgd=$7};
   };
 
   # master port setup
-  if ($a =~ /^(master)( *)([A-Za-z0-9_-]+)($*)/) {
+  if ($a =~ /^(master)( *)([A-Za-z0-9_-]+)/m) {
     if($1 eq "master") {
       master_init($3);
     };
     $a = <FILE>;
-    until ($a =~ /^(end master)($*)/) {
-      if ($a =~ /^( *)(dat_size|adr_o_hi|adr_o_lo|lock_o|err_i|rty_i|tga_o|tgc_o|priority)( *)(=)( *)(0x)?([0-9a-fA-F]*)(;?)($*)/) {
+    until ($a =~ /^(end master)/m) {
+      if ($a =~ /^( *)(dat_size|adr_o_hi|adr_o_lo|lock_o|err_i|rty_i|tga_o|tgc_o|priority)( *)(=)( *)(0x)?([0-9a-fA-F]*)(;?)/m) {
         $master[$masters]{"$2"}=$7;
         if (($2 eq "rty_i") && ($7 eq 1)) {
           $rty_i++; };
@@ -181,23 +181,23 @@ while($a = <FILE>)
 	if ($2 eq "priority") {
           $priority += $7; };
       }; #end if
-      if ($a =~ /^( *)(type)( *)(=)( *)(ro|wo|rw)(;?)($*)/) {
+      if ($a =~ /^( *)(type)( *)(=)( *)(ro|wo|rw)(;?)/m) {
         $master[$masters]{"$2"}=$6; };
       # priority for crossbarswitch
-      if ($a =~ /^( *)(priority)(_)([0-9a-zA-Z_]*)( *)(=)( *)([0-9]*)(;?)($*)/) {
+      if ($a =~ /^( *)(priority)(_)([0-9a-zA-Z_]*)( *)(=)( *)([0-9]*)(;?)/m) {
         $master[$masters]{("priority_"."$4")}=$8; };
       $a = <FILE>;
     };
   };
 
   # slave port setup
-  if ($a =~ /^(slave)( *)([A-Za-z0-9_-]+)($*)/) {
+  if ($a =~ /^(slave)( *)([A-Za-z0-9_-]+)/m) {
     if ($1 eq "slave") {
       slave_init($3);
     };
     $a = <FILE>;
-    until ($a =~ /^(end slave)($*)/) {
-      if ($a =~ /^( *)(dat_i|dat_o|sel_i|adr_i_hi|adr_i_lo|lock_i|tga_i|tgc_i|err_o|rty_o|baseadr|size|baseadr1|size1|baseadr2|size2|baseadr3|size3)( *)(=)( *)(0x)?([0-9a-fA-F]+)(;?)($*)/) {
+    until ($a =~ /^(end slave)/m) {
+      if ($a =~ /^( *)(dat_i|dat_o|sel_i|adr_i_hi|adr_i_lo|lock_i|tga_i|tgc_i|err_o|rty_o|baseadr|size|baseadr1|size1|baseadr2|size2|baseadr3|size3)( *)(=)( *)(0x)?([0-9a-fA-F]+)(;?)/m) {
         $slave[$slaves]{"$2"}=$7;
         if (($2 eq "rty_o") && ($7 eq 1)) {
           $rty_o++; };
@@ -208,7 +208,7 @@ while($a = <FILE>)
         if (($2 eq "tga_i") && ($7 eq 1)) {
           $tga_i++; };
       }; #end if
-      if ($a =~ /^( *)(type)( *)(=)( *)(ro|wo|rw)(;?)($*)/) {
+      if ($a =~ /^( *)(type)( *)(=)( *)(ro|wo|rw)(;?)/m) {
         $slave[$slaves]{"$2"}=$6; };
       $a = <FILE>;
     };
